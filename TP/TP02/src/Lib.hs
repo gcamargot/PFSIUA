@@ -47,7 +47,7 @@ name = "TP02"
 -- *** Exception: empty list
 -- ...
 head' :: [a] -> a
-head' xs = error "No implementado"
+head' xs = if null xs then error "empty list" else xs !! 0
 
 -- | 'tail'' devuelve todos los elementos de una lista no vacia excepto el primero
 --
@@ -63,7 +63,8 @@ head' xs = error "No implementado"
 -- *** Exception: empty list
 -- ...
 tail' :: [a] -> [a]
-tail' xs = error "No implementado"
+tail' [] = error "empty list"
+tail' (_ : xs) = xs
 
 -- | 'last'' toma una lista y devuelve su último elemento
 --
@@ -79,7 +80,9 @@ tail' xs = error "No implementado"
 -- *** Exception: empty list
 -- ...
 last' :: [a] -> a
-last' xs = error "No implementado"
+last' [] = error "empty list"
+last' [x] = x
+last' (_ : xs) = last' xs
 
 -- | 'init'' toma una lista y devuelve todo excepto el último elemento
 --
@@ -95,7 +98,9 @@ last' xs = error "No implementado"
 -- *** Exception: empty list
 -- ...
 init' :: [a] -> [a]
-init' xs = error "No implementado"
+init' [] = error "empty list"
+init' [_] = []
+init' (x : xs) = x : init' xs
 
 -- | 'length'' devuelve la longitud de una lista finita como un entero (Int)
 --
@@ -108,7 +113,8 @@ init' xs = error "No implementado"
 -- >>> length' []
 -- 0
 length' :: [a] -> Int
-length' xs = error "No implementado"
+length' [] = 0
+length' (_ : xs) = 1 + length' xs
 
 -- | 'sum'' calcula la suma de una lista finita de números
 --
@@ -121,7 +127,8 @@ length' xs = error "No implementado"
 -- >>> sum' []
 -- 0
 sum' :: (Num a) => [a] -> a
-sum' xs = error "No implementado"
+sum' [] = 0
+sum' (x : xs) = x + sum' xs
 
 -- | 'product'' calcula el producto de una lista finita de números
 --
@@ -134,7 +141,8 @@ sum' xs = error "No implementado"
 -- >>> product' []
 -- 1
 product' :: (Num a) => [a] -> a
-product' xs = error "No implementado"
+product' [] = 1
+product' (x : xs) = x * product' xs
 
 -- | 'null'' devuelve verdadero si una lista está vacía y falso en caso contrario
 --
@@ -149,7 +157,8 @@ product' xs = error "No implementado"
 -- >>> null []
 -- True
 null' :: [a] -> Bool
-null' xs = error "No implementado"
+null' [] = True
+null' _ = False
 
 -- | (+++) concatena dos listas
 --
@@ -166,7 +175,8 @@ null' xs = error "No implementado"
 -- >>> [] +++ []
 -- []
 (+++) :: [a] -> [a] -> [a]
-xs +++ ys = error "No implementado"
+[] +++ ys = ys
+(x:xs) +++ ys = x : (xs +++ ys)
 
 -- | 'at' xs n devuelve el enésimo elemento de la lista (se comporta como (!!))
 --
@@ -187,7 +197,10 @@ xs +++ ys = error "No implementado"
 -- *** Exception: negative index
 -- ...
 at :: [a] -> Int -> a
-at xs n = error "No implementado"
+at _ n | n < 0 = error "negative index"
+at [] _ = error "index too large"
+at (x:xs) 0 = x
+at (_:xs) n = at xs (n - 1)
 
 -- | 'elem'' x xs devuelve verdadero si x está en xs y falso en caso contrario
 --
@@ -204,7 +217,10 @@ at xs n = error "No implementado"
 -- >>> 'h' `elem'` "Hola"
 -- False
 elem' :: (Eq a) => a -> [a] -> Bool
-elem' e xs = error "No implementado"
+elem' _ [] = False
+elem' e (x:xs)
+  | e == x    = True
+  | otherwise = elem' e xs
 
 -- | 'take'' n xs devuelve una lista con los primeros n elementos de xs
 --
@@ -219,7 +235,9 @@ elem' e xs = error "No implementado"
 -- >>> take' 10 [1,3..]
 -- [1,3,5,7,9,11,13,15,17,19]
 take' :: Int -> [a] -> [a]
-take' n xs = error "No implementado"
+take' _ [] = []
+take' n _ | n <= 0 = []
+take' n (x:xs) = x : take' (n - 1) xs
 
 -- | 'drop'' n xs devuelve una lista en la que se han descartado los primeros
 -- n elementos de xs
@@ -237,7 +255,9 @@ take' n xs = error "No implementado"
 -- >>> drop' 5 [1,3..15]
 -- [11,13,15]
 drop' :: Int -> [a] -> [a]
-drop' n xs = error "No implementado"
+drop' _ [] = []
+drop' n xs | n <= 0 = xs
+drop' n (_:xs) = drop' (n - 1) xs
 
 -- | 'reverse'' toma una lista y la invierte
 --
@@ -252,7 +272,8 @@ drop' n xs = error "No implementado"
 -- >>> reverse' (reverse' [1..10])
 -- [1,2,3,4,5,6,7,8,9,10]
 reverse' :: [a] -> [a]
-reverse' xs = error "No implementado"
+reverse' [] = []
+reverse' (x:xs) = reverse' xs +++ [x]
 
 -- | 'maximum'' devuelve el máximo de una lista de elementos
 --
@@ -272,7 +293,12 @@ reverse' xs = error "No implementado"
 -- *** Exception: empty list
 -- ...
 maximum' :: (Ord a) => [a] -> a
-maximum' xs = error "No implementado"
+maximum' [] = error "empty list"
+maximum' [x] = x
+maximum' (x:xs) = max' x (maximum' xs)
+
+max' :: (Ord a) => a -> a -> a
+max' a b = if a < b then b else a
 
 -- | 'minimum'' devuelve el minimo de una lista de elementos
 --
@@ -292,7 +318,13 @@ maximum' xs = error "No implementado"
 -- *** Exception: empty list
 -- ...
 minimum' :: (Ord a) => [a] -> a
-minimum' xs = error "No implementado"
+minimum' [] = error "empty list"
+minimum' [x] = x
+minimum' (x:xs) = min' x (minimum' xs)
+
+min' :: (Ord a) => a -> a -> a
+min' a b = if a < b then a else b
+
 
 -- | 'repeat'' toma un elemento y devuelve una lista infinita de ese elemento
 --
@@ -309,7 +341,7 @@ minimum' xs = error "No implementado"
 -- >>> take 5 (repeat' "")
 -- ["","","","",""]
 repeat' :: a -> [a]
-repeat' x = error "No implementado"
+repeat' x = x : repeat' x
 
 -- | 'cycle'' toma una lista no vacía y la reproduce infinitamente
 --
@@ -325,7 +357,8 @@ repeat' x = error "No implementado"
 -- *** Exception: empty list
 -- ...
 cycle' :: [a] -> [a]
-cycle' xs = error "No implementado"
+cycle' [] = error "empty list"
+cycle' xs = xs +++ cycle' xs
 
 -- | 'replicate' n x devuelve una lista con n copias de x
 --
@@ -338,7 +371,7 @@ cycle' xs = error "No implementado"
 -- >>> replicate' 5 []
 -- [[],[],[],[],[]]
 replicate' :: Int -> a -> [a]
-replicate' n x = error "No implementado"
+replicate' n x = take' n (repeat' x)
 
 -- | 'fst'' devuelve el primer elemento de un par
 --
@@ -349,7 +382,7 @@ replicate' n x = error "No implementado"
 -- >>> fst' (True, 'a')
 -- True
 fst' :: (a, b) -> a
-fst' pair = error "No implementado"
+fst' (a, b) = a 
 
 -- | 'snd'' devuelve el segundo elemento de un par
 --
@@ -360,7 +393,7 @@ fst' pair = error "No implementado"
 -- >>> snd' (True, 'a')
 -- 'a'
 snd' :: (a, b) -> b
-snd' pair = error "No implementado"
+snd' (_, b) = b
 
 -- | 'zip'' recibe dos listas y devuelve una lista de pares
 --
@@ -378,7 +411,9 @@ snd' pair = error "No implementado"
 -- >>> zip' "Hola" "Haskell"
 -- [('H','H'),('o','a'),('l','s'),('a','k')]
 zip' :: [a] -> [b] -> [(a, b)]
-zip' xs ys = error "No implementado"
+zip' [] _ = []
+zip' _ [] = []
+zip' (x:xs) (y:ys) = (x, y) : zip' xs ys
 
 -- | 'unzip'' recibe una lista de pares y devuelve un par de listas
 --
@@ -393,4 +428,6 @@ zip' xs ys = error "No implementado"
 -- >>> unzip' [('H','H'),('o','a'),('l','s'),('a','k')]
 -- ("Hola","Hask")
 unzip' :: [(a, b)] -> ([a], [b])
-unzip' xs = error "No implementado"
+unzip' [] = ([], [])
+unzip' ((x, y):xs) = (x : fst (unzip' xs), y : snd (unzip' xs))
+ 
