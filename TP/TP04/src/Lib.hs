@@ -37,7 +37,7 @@ name = "TP04"
 -- >>> map' length ["uno", "dos", "tres", "cuatro"]
 -- [3,3,4,6]
 map' :: (a -> b) -> [a] -> [b]
-map' f xs = error "No implementado"
+map' f = zipWith ($) (repeat f)
 
 -- | 'filter'' toma un predicado y una lista, y devuelve una nueva lista con
 -- los elementos para los cuales se cumple el predicado.
@@ -51,7 +51,7 @@ map' f xs = error "No implementado"
 -- >>> filter' (< 0) [1..10]
 -- []
 filter' :: (a -> Bool) -> [a] -> [a]
-filter' p xs = error "No implementado"
+filter' p xs = map fst $ filter snd $ zip xs (map p xs)
 
 -- | 'zipWith'' toma una función que acepta dos parámetros, y dos listas
 -- y devuelve una nueva lista que resulta unir las otras dos mediante la
@@ -66,7 +66,9 @@ filter' p xs = error "No implementado"
 -- >>> zipWith' (++) ["a", "b", "c"] ["1", "2", "3", "4"]
 -- ["a1","b2","c3"]
 zipWith' :: (a -> b -> c) -> [a] -> [b] -> [c]
-zipWith' f xs ys = error "No implementado"
+zipWith' _ [] _ = []
+zipWith' _ _ [] = []
+zipWith' f (x:xs) (y:ys) = f x y : zipWith' f xs ys
 
 -- | 'takeWhile'' toma un predicado y una función y devuelve el prefijo más
 -- largo de la lista para el cual se verifica el predicado.
@@ -80,7 +82,10 @@ zipWith' f xs ys = error "No implementado"
 -- >>> takeWhile' (< 0) [1,2,3]
 -- []
 takeWhile' :: (a -> Bool) -> [a] -> [a]
-takeWhile' p xs = error "No implementado"
+takeWhile' _ [] = []
+takeWhile' p (x:xs)
+    | p x       = x : takeWhile' p xs
+    | otherwise = []
 
 -- | 'dropWhile'' toma un predicado y una función y descarta el prefijo más
 -- largo de la lista para el cual se verifica el predicado.
@@ -94,7 +99,10 @@ takeWhile' p xs = error "No implementado"
 -- >>> dropWhile' (< 0) [1,2,3]
 -- [1,2,3]
 dropWhile' :: (a -> Bool) -> [a] -> [a]
-dropWhile' p xs = error "No implementado"
+dropWhile' _ [] = []
+dropWhile' p (x:xs)
+    | p x       = dropWhile' p xs
+    | otherwise = x : xs
 
 -- | 'span'', toma un predicado p y una lista xs, y devuelve una tupla en la que
 -- el primer elemento contiene los primeros elementos de xs que satisfacen p,
@@ -114,8 +122,10 @@ dropWhile' p xs = error "No implementado"
 -- prop> \xs -> span' odd xs == (takeWhile odd xs, dropWhile odd xs)
 -- +++ OK, passed 100 tests.
 span' :: (a -> Bool) -> [a] -> ([a], [a])
-span' p xs = error "No implementado"
-
+span' _ [] = ([], [])
+span' p xs@(x:xs')
+    | p x       = let (ys, zs) = span' p xs' in (x:ys, zs)
+    | otherwise = ([], xs)
 -- | 'partition'' toma un predicado y una lista y devuelve un par de listas
 -- la primera de los cuales contiene los elementos que satisfacen el predicado
 -- y la segunda los que no lo satisfacen.
@@ -136,7 +146,12 @@ span' p xs = error "No implementado"
 -- prop> \xs -> partition' odd xs == (filter odd xs, filter (not . odd) xs)
 -- +++ OK, passed 100 tests.
 partition' :: (a -> Bool) -> [a] -> ([a], [a])
-partition' p xs = error "No implementado"
+partition' p xs = partitionAcc p xs [] []
+  where
+    partitionAcc _ [] ts fs = (reverse ts, reverse fs)
+    partitionAcc p (x:xs) ts fs
+      | p x       = partitionAcc p xs (x:ts) fs
+      | otherwise = partitionAcc p xs ts (x:fs)
 
 -- | 'any'' toma un predicado y una lista y devuelve verdadero si el predicado
 -- se cumple para algún elemento de la lista.
@@ -154,7 +169,10 @@ partition' p xs = error "No implementado"
 -- >>> any' (>1000) [1..]
 -- True
 any' :: (a -> Bool) -> [a] -> Bool
-any' p xs = error "No implementado"
+any' _ [] = False
+any' p (x:xs)
+    | p x       = True
+    | otherwise = any' p xs
 
 -- | 'all'' toma un predicado y una lista y devuelve verdadero si el predicado
 -- se cumple para todos los elementos de la lista.
@@ -168,8 +186,10 @@ any' p xs = error "No implementado"
 -- >>> all' (not . null) ["uno", "dos", "tres", "cuatro"]
 -- True
 all' :: (a -> Bool) -> [a] -> Bool
-all' p xs = error "No implementado"
-
+all' _ [] = True
+all' p (x:xs)
+    | p x       = all' p xs
+    | otherwise = False
 -- | 'iterate'' toma una función y un valor inicial, y devuelve una lista infinita
 -- que resulta de la aplicación repetida de la función sobre el valor inicial.
 --
@@ -182,4 +202,4 @@ all' p xs = error "No implementado"
 -- >>> take 5 (iterate' (\x -> succ(head x):x) "a")
 -- ["a","ba","cba","dcba","edcba"]
 iterate' :: (a -> a) -> a -> [a]
-iterate' f x = error "No implementado"
+iterate' f x = x : iterate' f (f x)
