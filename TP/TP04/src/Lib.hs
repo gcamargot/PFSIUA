@@ -37,7 +37,8 @@ name = "TP04"
 -- >>> map' length ["uno", "dos", "tres", "cuatro"]
 -- [3,3,4,6]
 map' :: (a -> b) -> [a] -> [b]
-map' f = zipWith ($) (repeat f)
+map' _ []     = []
+map' f (x:xs) = f x : map' f xs
 
 -- | 'filter'' toma un predicado y una lista, y devuelve una nueva lista con
 -- los elementos para los cuales se cumple el predicado.
@@ -51,7 +52,10 @@ map' f = zipWith ($) (repeat f)
 -- >>> filter' (< 0) [1..10]
 -- []
 filter' :: (a -> Bool) -> [a] -> [a]
-filter' p xs = map fst $ filter snd $ zip xs (map p xs)
+filter' _ [] = []  -- Caso base: Si la lista está vacía, devolvemos una lista vacía.
+filter' p (x:xs)
+    | p x       = x : filter' p xs  -- Si el predicado se cumple, incluimos el elemento.
+    | otherwise = filter' p xs      -- Si no se cumple, lo omitimos y continuamos con el resto.
 
 -- | 'zipWith'' toma una función que acepta dos parámetros, y dos listas
 -- y devuelve una nueva lista que resulta unir las otras dos mediante la
@@ -146,12 +150,7 @@ span' p xs@(x:xs')
 -- prop> \xs -> partition' odd xs == (filter odd xs, filter (not . odd) xs)
 -- +++ OK, passed 100 tests.
 partition' :: (a -> Bool) -> [a] -> ([a], [a])
-partition' p xs = partitionAcc p xs [] []
-  where
-    partitionAcc _ [] ts fs = (reverse ts, reverse fs)
-    partitionAcc p (x:xs) ts fs
-      | p x       = partitionAcc p xs (x:ts) fs
-      | otherwise = partitionAcc p xs ts (x:fs)
+partition' p xs = (filter' p xs, filter' (not . p) xs)
 
 -- | 'any'' toma un predicado y una lista y devuelve verdadero si el predicado
 -- se cumple para algún elemento de la lista.
