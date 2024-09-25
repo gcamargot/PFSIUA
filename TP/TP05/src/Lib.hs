@@ -49,7 +49,7 @@ name = "TP05"
 -- >>> length' []
 -- 0
 length' :: [a] -> Int
-length' = error "No implementado"
+length' = foldl (\acc _ -> acc + 1) 0
 
 -- | 'sum'' calcula la suma de una lista finita de números
 --
@@ -62,8 +62,7 @@ length' = error "No implementado"
 -- >>> sum' []
 -- 0
 sum' :: (Num a) => [a] -> a
-sum' = error "No implementado"
-
+sum' = foldl (+) 0
 -- | 'product'' calcula el producto de una lista finita de números
 --
 -- Ejemplos:
@@ -75,8 +74,7 @@ sum' = error "No implementado"
 -- >>> product' []
 -- 1
 product' :: (Num a) => [a] -> a
-product' = error "No implementado"
-
+product' = foldl (*) 1
 -- | 'reverse'' toma una lista y la invierte
 --
 -- Ejemplos:
@@ -93,7 +91,7 @@ product' = error "No implementado"
 -- prop> \xs -> xs == reverse' (reverse' xs)
 -- +++ OK, passed 100 tests.
 reverse' :: [a] -> [a]
-reverse' = error "No implementado"
+reverse' = foldl (flip (:)) []
 
 -- | 'maximum'' devuelve el máximo de una lista de elementos
 --
@@ -113,7 +111,7 @@ reverse' = error "No implementado"
 -- ... empty list
 -- ...
 maximum' :: (Ord a) => [a] -> a
-maximum' = error "No implementado"
+maximum' = foldl1 max
 
 -- | 'minimum'' devuelve el minimo de una lista de elementos
 --
@@ -133,7 +131,7 @@ maximum' = error "No implementado"
 -- ... empty list
 -- ...
 minimum' :: (Ord a) => [a] -> a
-minimum' = error "No implementado"
+minimum' = foldl1 min
 
 -- | 'map'' toma una función y una lista y aplica esa función a cada elemento
 -- de la lista.
@@ -149,7 +147,7 @@ minimum' = error "No implementado"
 -- >>> map' length ["uno", "dos", "tres", "cuatro"]
 -- [3,3,4,6]
 map' :: (a -> b) -> [a] -> [b]
-map' = error "No implementado"
+map' f xs = [f x | x <- xs]
 
 -- | 'filter'' toma un predicado y una lista, y devuelve una nueva lista con
 -- los elementos para los cuales se cumple el predicado.
@@ -163,7 +161,7 @@ map' = error "No implementado"
 -- >>> filter' (< 0) [1..10]
 -- []
 filter' :: (a -> Bool) -> [a] -> [a]
-filter' = error "No implementado"
+filter' p xs = [x | x <- xs, p x]
 
 -- | 'concat'' concatena una lista de listas
 --
@@ -174,7 +172,7 @@ filter' = error "No implementado"
 -- >>> concat' ["Hola",", ","Haskell"]
 -- "Hola, Haskell"
 concat' :: [[a]] -> [a]
-concat' = error "No implementado"
+concat' = foldr (++) []
 
 -- | 'and'' devuelve la conjunción de una lista de booleanos.
 -- Para que el resultado sea True, la lista debe ser finita.
@@ -190,7 +188,7 @@ concat' = error "No implementado"
 -- >>> and' (map (/=1000) [1..])
 -- False
 and' :: [Bool] -> Bool
-and' = error "No implementado"
+and' = foldr (&&) True
 
 -- | 'or'' devuelve la disyunción de una lista de booleanos.
 -- Para que el resultado sea False, la lista debe ser finita.
@@ -206,7 +204,7 @@ and' = error "No implementado"
 -- >>> or' (map (==1000) [1..])
 -- True
 or' :: [Bool] -> Bool
-or' = error "No implementado"
+or' = foldr (||) False
 
 -- | 'any'' toma un predicado y una lista y devuelve verdadero si el predicado
 -- se cumple para algún elemento de la lista.
@@ -224,7 +222,7 @@ or' = error "No implementado"
 -- >>> any' (>1000) [1..]
 -- True
 any' :: (a -> Bool) -> [a] -> Bool
-any' = error "No implementado"
+any' p = foldr (\x acc -> p x || acc) False
 
 -- | 'all'' toma un predicado y una lista y devuelve verdadero si el predicado
 -- se cumple para todos los elementos de la lista.
@@ -238,7 +236,7 @@ any' = error "No implementado"
 -- >>> all' (not . null) ["uno", "dos", "tres", "cuatro"]
 -- True
 all' :: (a -> Bool) -> [a] -> Bool
-all' = error "No implementado"
+all' p = foldr (\x acc -> p x && acc) True
 
 -- | 'elem'' x xs devuelve verdadero si x está en xs y falso en caso contrario
 --
@@ -255,7 +253,7 @@ all' = error "No implementado"
 -- >>> 'h' `elem'` "Hola"
 -- False
 elem' :: (Eq a) => a -> [a] -> Bool
-elem' = error "No implementado"
+elem' y = foldr (\x acc -> x == y || acc) False
 
 -- | 'notElem'' x xs devuelve falso si x está en xs y verdadero en caso
 -- contrario
@@ -279,7 +277,7 @@ elem' = error "No implementado"
 -- prop> \x xs -> not ((x `elem'` xs) && (x `notElem'` xs))
 -- +++ OK, passed 100 tests.
 notElem' :: (Eq a) => a -> [a] -> Bool
-notElem' = error "No implementado"
+notElem' y = not . elem' y
 
 -- | 'find'' recibe un predicado y una lista y devuelve el primer elemento de
 -- la lista que cumple ese predicado, o Nothing en caso contrario.
@@ -291,7 +289,7 @@ notElem' = error "No implementado"
 -- >>> find' (>3) [1..5]
 -- Just 4
 find' :: (a -> Bool) -> [a] -> Maybe a
-find' = error "No implementado"
+find' p = foldr (\x acc -> if p x then Just x else acc) Nothing
 
 -- | 'sumrange' calcula la suma de números contenidos en un rango,
 -- ambos extremos incluídos.
@@ -307,7 +305,9 @@ find' = error "No implementado"
 -- >>> sumrange 5 2
 -- 0
 sumrange :: (Ord a, Integral a) => a -> a -> a
-sumrange = error "No implementado"
+sumrange a b
+  | a > b     = 0
+  | otherwise = sum [a..b]
 
 -- | 'sumsquares' calcula la suma de los cuadrados de los números en un rango
 --
@@ -318,7 +318,9 @@ sumrange = error "No implementado"
 -- >>> sumsquares 5 4
 -- 0
 sumsquares :: (Ord a, Integral a) => a -> a -> a
-sumsquares = error "No implementado"
+sumsquares a b
+  | a > b     = 0
+  | otherwise = sum [x^2 | x <- [a..b]]
 
 -- | 'sumpowers' calcula la suma de la enésima potencia de los números en un rango
 --
@@ -331,7 +333,9 @@ sumsquares = error "No implementado"
 -- >>> sumpowers 0 10 1
 -- 55
 sumpowers :: (Ord a, Integral a) => a -> a -> a -> a
-sumpowers = error "No implementado"
+sumpowers a b n
+  | a > b     = 0
+  | otherwise = sum [x^n | x <- [a..b]]
 
 -- | 'sumcubes' calcula la suma de los cubos de los números en un rango
 --
@@ -344,4 +348,4 @@ sumpowers = error "No implementado"
 -- >>> sumcubes 3 4
 -- 91
 sumcubes :: (Ord a, Integral a) => a -> a -> a
-sumcubes = error "No implementado"
+sumcubes a b = sumpowers a b 3
