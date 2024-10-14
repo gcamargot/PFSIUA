@@ -20,19 +20,10 @@ object Practico7:
     *   Una lista
     * @return
     *   La longitud de la lista `xs`
-    * 
-    * {{{
-    * scala> length(Nil)
-    * val res0: Int = 0
-    * 
-    * scala> length(List(1,2,3))
-    * val res1: Int = 3
-    * 
-    * scala> length(List.range(1,1000))
-    * val res2: Int = 999
-    * }}}
     */
-  def length[T](xs: List[T]): Int = ???
+  def length[T](xs: List[T]): Int =
+    if xs.isEmpty then 0
+    else 1 + length(xs.tail)
 
   /** Calcula la suma de los elementos de una lista de enteros.
     *
@@ -42,19 +33,10 @@ object Practico7:
     *   Una lista de enteros
     * @return
     *   La suma de los enteros de la lista
-    * 
-    * {{{
-    * scala> sum(List())
-    * val res4: Int = 0
-    * 
-    * scala> sum(List.range(1,10))
-    * val res5: Int = 45
-    * 
-    * scala> sum(List.fill(100)(5))
-    * val res7: Int = 500
-    * }}}
     */
-  def sum(xs: List[Int]): Int = ???
+  def sum(xs: List[Int]): Int =
+    if xs.isEmpty then 0
+    else xs.head + sum(xs.tail)
 
   /** Devuelve el elemento más grande de una lista de enteros.
     *
@@ -68,23 +50,11 @@ object Practico7:
     *   El elemento más grande de `xs`
     * @throws NoSuchElementException
     *   , si `xs` es una lista vacía
-    * 
-    * {{{
-    * scala> max(List(1))
-    * val res8: Int = 1
-    * 
-    * scala> max(List.range(1,10000))
-    * val res9: Int = 9999
-    * 
-    * scala> max(List.fill(100)(9))
-    * val res10: Int = 9
-    * 
-    * scala> max(List())
-    * java.util.NoSuchElementException
-    * ...
-    * }}}
     */
-  def max(xs: List[Int]): Int = ???
+  def max(xs: List[Int]): Int =
+    if xs.isEmpty then throw new NoSuchElementException("Lista vacía")
+    else if xs.tail.isEmpty then xs.head
+    else math.max(xs.head, max(xs.tail))
 
   /** Devuelve el factorial de un número.
     *
@@ -96,20 +66,11 @@ object Practico7:
     *   el factorial de `n`
     * @throws IllegalArgumentException
     *   , si el número es negativo.
-    * 
-    * {{{
-    * scala> factorial(0)
-    * val res12: BigInt = 1
-    * 
-    * scala> factorial(10)
-    * val res13: BigInt = 3628800
-    * 
-    * scala> factorial(-1)
-    * java.lang.IllegalArgumentException: requirement failed
-    * ...
-    * }}}
     */
-  def factorial(n: Int): BigInt = ???
+  def factorial(n: Int): BigInt =
+    if n < 0 then throw new IllegalArgumentException("Número negativo")
+    else if n == 0 then 1
+    else n * factorial(n - 1)
 
   /** Devuelve el enésimo número de Fibonacci.
     *
@@ -125,20 +86,12 @@ object Practico7:
     *   el enésimo número de Fibonacci
     * @throws IllegalArgumentException
     *   , si el número es negativo.
-    * 
-    * {{{
-    * scala> (0 until 10).map(fibo)
-    * val res17: IndexedSeq[BigInt] = Vector(0, 1, 1, 2, 3, 5, 8, 13, 21, 34)
-    * 
-    * scala> fibo(50)
-    * val res18: BigInt = 12586269025
-    * 
-    * scala> fibo(-1)
-    * java.lang.IllegalArgumentException: requirement failed
-    * ...
-    * }}}
     */
-  def fibo(n: Int): BigInt = ???
+  def fibo(n: Int): BigInt =
+    if n < 0 then throw new IllegalArgumentException("Número negativo")
+    else if n == 0 then 0
+    else if n == 1 then 1
+    else fibo(n - 1) + fibo(n - 2)
 
   /** Calcula potencias enteras no negativas de enteros.
     *
@@ -150,23 +103,11 @@ object Practico7:
     *   x elevado a la n
     * @throws IllegalArgumentException
     *   , si el `n` es negativo
-    * 
-    * {{{
-    * scala> pow(2,32) 
-    * val res20: BigInt = 4294967296
-    * 
-    * scala> pow(100,0)
-    * val res21: BigInt = 1
-    * 
-    * scala> pow(0,1000)
-    * val res22: BigInt = 0
-    * 
-    * scala> pow(2,-1)
-    * java.lang.IllegalArgumentException: requirement failed
-    * ...
-    * }}}
     */
-  def pow(x: BigInt, n: Int): BigInt = ???
+  def pow(x: BigInt, n: Int): BigInt =
+    if n < 0 then throw new IllegalArgumentException("Exponente negativo")
+    else if n == 0 then 1
+    else x * pow(x, n - 1)
 
   /** Calcula la suma de enteros contenidos en un rango.
     *
@@ -176,22 +117,10 @@ object Practico7:
     *   el extremo superior del rango
     * @return
     *   la suma de los números contenidos en el rango [a,b]
-    *
-    * {{{
-    * scala> sumrange(0,10)
-    * val res0: BigInt = 55
-    *
-    * scala> sumrange(3,5)
-    * val res1: BigInt = 12
-    *
-    * scala> sumrange(10,7)
-    * val res2: BigInt = 0
-    *
-    * scala> sumrange(5,5)
-    * val res3: BigInt = 5
-    * }}}
     */
-  def sumrange(a: BigInt, b: BigInt): BigInt = ???
+  def sumrange(a: BigInt, b: BigInt): BigInt =
+    if a > b then 0
+    else a + sumrange(a + 1, b)
 
   /** Calcula la suma de los cuadrados de los enteros de un rango.
     *
@@ -201,19 +130,10 @@ object Practico7:
     *   el extremo superior del rango
     * @return
     *   la suma de cuadrados de los números en el rango [a,b]
-    * 
-    * {{{
-    * scala> sumsquares(0,10)
-    * val res0: BigInt = 385
-    * 
-    * scala> sumsquares(10,7)
-    * val res1: BigInt = 0
-    * 
-    * scala> sumsquares(10,10
-    * val res2: BigInt = 100
-    * }}}
     */
-  def sumsquares(a: BigInt, b: BigInt): BigInt = ???
+  def sumsquares(a: BigInt, b: BigInt): BigInt =
+    if a > b then 0
+    else a * a + sumsquares(a + 1, b)
 
   /** Calcula la suma de los cubos de los enteros de un rango.
     *
@@ -223,19 +143,10 @@ object Practico7:
     *   el extremo superior del rango
     * @return
     *   la suma de cubos de los números en el rango [a,b]
-    * 
-    * {{{
-    * scala> sumcubes(0,10)
-    * val res3: BigInt = 3025
-    * 
-    * scala> sumcubes(10,7)
-    * val res4: BigInt = 0
-    * 
-    * scala> sumcubes(10,10)
-    * val res5: BigInt = 1000
-    * }}}
     */
-  def sumcubes(a: BigInt, b: BigInt): BigInt = ???
+  def sumcubes(a: BigInt, b: BigInt): BigInt =
+    if a > b then 0
+    else a * a * a + sumcubes(a + 1, b)
 
   /** Calcula la suma de las potencias enésimas de los enteros de un rango.
     *
@@ -250,54 +161,36 @@ object Practico7:
     *   [a,b]
     * @throws IllegalArgumentException
     *   , si el `n` es negativo y el rango tiene al menos un elemento.
-    * 
-    * {{{
-    * scala> sumpowers(0,10,3)
-    * val res6: BigInt = 3025
-    * 
-    * scala> sumpowers(10,7,2)
-    * val res7: BigInt = 0
-    * 
-    * scala> sumpowers(10,7,-1)
-    * val res8: BigInt = 0
-    * 
-    * scala> sumpowers(1,10,-2)
-    * java.lang.IllegalArgumentException: requirement failed
-    * ...
-    * }}}
     */
-  def sumpowers(a: BigInt, b: BigInt, n: Int): BigInt = ???
+  def sumpowers(a: BigInt, b: BigInt, n: Int): BigInt =
+    if n < 0 && a <= b then throw new IllegalArgumentException("Exponente negativo y rango tiene elementos")
+    else if a > b then 0
+    else pow(a, n) + sumpowers(a + 1, b, n)
 
   /** Calcula las raíces de la ecuación de segundo grado ax^2 + bx + c.
     *
     * Devuelve un par de pares, cada uno de los cuales representa un número
     * complejo.
-      *
+    *
     * @param a,b,c
     *   Los coeficientes
     * @return
     *   las raices de la ecuación
     * @throws IllegalArgumentException
     *   , si el coeficiente `a` es 0.
-    *
-    * Ejemplos:
-    *
-    * {{{
-    * scala> quadraticRoots(1,4,3)
-    * val res0: ((Double, Double), (Double, Double)) = ((-1.0,0.0),(-3.0,0.0))
-    *
-    * scala> quadraticRoots(1,4,5)
-    * val res1: ((Double, Double), (Double, Double)) = ((-2.0,1.0),(-2,-1.0))
-    *
-    * scala> quadraticRoots(0,2,4)
-    * java.lang.IllegalArgumentException: requirement failed: ...
-    * }}}
     */
-  def quadraticRoots(
-      a: Double,
-      b: Double,
-      c: Double
-  ): ((Double, Double), (Double, Double)) = ???
+  def quadraticRoots(a: Double, b: Double, c: Double): ((Double, Double), (Double, Double)) =
+    if a == 0 then throw new IllegalArgumentException("El coeficiente 'a' no puede ser cero")
+    else
+      val discriminant = b * b - 4 * a * c
+      if discriminant >= 0 then
+        val root1 = (-b + math.sqrt(discriminant)) / (2 * a)
+        val root2 = (-b - math.sqrt(discriminant)) / (2 * a)
+        ((root1, 0.0), (root2, 0.0))
+      else
+        val realPart = -b / (2 * a)
+        val imaginaryPart = math.sqrt(-discriminant) / (2 * a)
+        ((realPart, imaginaryPart), (realPart, -imaginaryPart))
 
   /** Determina si los paréntesis en una cadena de caracteres estan balanceados.
     *
@@ -305,25 +198,17 @@ object Practico7:
     *   Una cadena de caracteres.
     * @return
     *   Verdadero si la cadena contiene paréntesis balanceados.
-    *
-    * Ejemplos:
-    *
-    * {{{
-    * scala> balance("(()())")
-    * val res0: Boolean = true
-    *
-    * scala> balance("")
-    * val res1: Boolean = true
-    *
-    * scala> balance("()(")
-    * val res2: Boolean = false
-    *
-    * scala> balance("()))")
-    * val res3: Boolean = false
-    * }}}
     */
-  def balance(chars: String): Boolean = ???
+  def balance(chars: String): Boolean =
+    def loop(cs: List[Char], openCount: Int): Boolean =
+      if cs.isEmpty then openCount == 0
+      else if cs.head == '(' then loop(cs.tail, openCount + 1)
+      else if cs.head == ')' then openCount > 0 && loop(cs.tail, openCount - 1)
+      else loop(cs.tail, openCount)
+
+    loop(chars.toList, 0)
 
   def main(args: Array[String]): Unit =
     println(s"Este es el práctico $practico\n")
+
 end Practico7
