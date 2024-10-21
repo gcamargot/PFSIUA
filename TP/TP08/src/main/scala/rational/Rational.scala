@@ -18,13 +18,15 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
 
   import Rational.*
 
+  require(d != 0, "El denominador no puede ser 0")
+
   private val g = gcd(n, d).abs
 
   /** El numerador */
-  val numer = n / g
+  val numer = if d < 0 then -n / g else n / g
 
   /** El denominador */
-  val denom = d / g
+  val denom = if d < 0 then -d / g else d / g
 
   /** Devuelve una String que representa este racional.
     *
@@ -44,7 +46,10 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
     * val res3: String = -3/4
     * }}}
     */
-  override def toString: String = f"$numer/$denom"
+  override def toString: String =
+    if denom == 1 then s"$numer"
+    else if numer == 0 then "0"
+    else s"$numer/$denom"
 
   /** Implementa la suma de números racionales 
    * 
@@ -81,7 +86,8 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
    * val res6: rational.Rational = 1/3
    * }}}
    */
-  def -(that: Rational): Rational = ???
+  def -(that: Rational): Rational =
+    new Rational(numer * that.denom - denom * that.numer, denom * that.denom)
 
   /** Implementa la resta de un entero
     *
@@ -93,7 +99,7 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
     * val res8: rational.Rational = 1/3
     * }}}
     */
-  def -(that: Int): Rational = ???
+  def -(that: Int): Rational = new Rational(numer - that * denom, denom)
 
   /** Implementa la división de números racionales
    * 
@@ -112,7 +118,9 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
    * @throws scala.IllegalArgumentException
    *   , si el divisor es 0
    */
-  def /(that: Rational): Rational = ???
+  def /(that: Rational): Rational =
+    require(that.numer != 0, "El denominador no puede ser 0")
+    new Rational(numer * that.denom, denom * that.numer)
 
   /** Implementa la división por un entero
    * 
@@ -131,7 +139,9 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
    * @throws scala.IllegalArgumentException
    *   , si el divisor es 0
    */
-  def /(that: Int): Rational = ???
+  def /(that: Int): Rational =
+    require(that != 0, "El denominador no puede ser 0")
+    new Rational(numer, denom * that)
 
   /** Implementa la multiplicación de números racionales
    * 
@@ -146,7 +156,8 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
    * val res5: rational.Rational = 0
    * }}}
    */
-  def *(that: Rational): Rational = ???
+  def *(that: Rational): Rational =
+    new Rational(numer * that.numer, denom * that.denom)
 
   /** Implementa la multiplicación por un entero
    * 
@@ -161,7 +172,7 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
    * val res8: rational.Rational = 0
    * }}}
    */
-  def *(that: Int): Rational = ???
+  def *(that: Int): Rational = new Rational(numer * that, denom)
 
   /** Implementa la negación de un racional
     *
@@ -176,7 +187,7 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
     * val res11: rational.Rational = 0
     * }}}
     */
-  def unary_- : Rational = ???
+  def unary_- : Rational = new Rational(-numer, denom)
 
   /** Implementa el inverso de un racional
     * 
@@ -198,7 +209,9 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
     * @throws scala.IllegalArgumentException
     *   , si el racional es 0
     */
-  def inverse: Rational = ???
+  def inverse: Rational =
+    require(numer != 0, "El denominador no puede ser 0")
+    new Rational(denom, numer)
 
   /** Devuelve la potencia enésima de un racional
    * 
@@ -227,7 +240,13 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
    *   , si el racional es 0 y la potencia es negativa
    * 
    */
-  def pow(n: Int): Rational = ???
+  def pow(n: Int): Rational =
+    if n == 0 then
+      Rational(1)
+    else if n > 0 then
+      new Rational(math.pow(numer, n).toInt, math.pow(denom, n).toInt)
+    else
+      inverse.pow(-n)
 
   /** Implementa la comparación de igualdad
    * 
@@ -255,7 +274,7 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
     * val res24: Boolean = true
     * }}}
     */
-  override def hashCode: Int = ???
+  override def hashCode: Int = (numer, denom).##
 
   /** Compara `this` con `that`
     *
@@ -279,7 +298,10 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
     * val res28: Boolean = true
     * }}}
     */
-  override def compare(that: Rational): Int = ???
+  override def compare(that: Rational): Int =
+    val lhs = this.numer.toLong * that.denom
+    val rhs = that.numer.toLong * this.denom
+    lhs.compare(rhs)
 end Rational
 
 /** Objeto compañero de la clase Rational */
@@ -305,7 +327,7 @@ object Rational:
    * 
    */
   def apply(n: Int, d: Int): Rational =
-    require(n != 0, "El denominador no puede ser cero")
+    require(d != 0, "El denominador no puede ser 0")
     new Rational(n, d)
 
   /** Método factoría, construye un Rational a partir de un entero
@@ -358,7 +380,32 @@ object Rational:
    *   , si el formato es correcto pero el denominador es cero.
    * 
    */
-  def apply(s: String): Rational = ???
+  def apply(s: String): Rational =
+    if s.isEmpty then throw NumberFormatException("Empty string")
+    
+    val trimmed = s.trim
+    val parts = trimmed.split("/")
+    parts.length match
+      case 1 =>
+        try
+          val n = parts(0).toInt
+          apply(n)
+        catch
+          case _: NumberFormatException => throw NumberFormatException(s"Invalid number: ${parts(0)}")
+      case 2 =>
+        if parts(0).isEmpty || parts(1).isEmpty then
+          throw NumberFormatException(s"Invalid format: $s")
+        try
+          val n = parts(0).toInt
+          val d = parts(1).toInt
+          if d == 0 then
+            throw IllegalArgumentException("El denominador no puede ser 0")
+          apply(n, d)
+        catch
+          case _: NumberFormatException =>
+            throw NumberFormatException(s"Invalid number in fraction: $s")
+      case _ =>
+        throw NumberFormatException(s"Invalid format: $s")
 
   /** Métodos de extensión */
   extension (n: Int)
@@ -372,7 +419,7 @@ object Rational:
      * val res2: rational.Rational = 1/4
      * }}}
      */
-    def +(that: Rational) = ???
+    def +(that: Rational): Rational = that + n
     /** Extensión de la clase Int que permite restar un Rational
      * 
      * {{{
@@ -383,7 +430,7 @@ object Rational:
      * val res2: rational.Rational = -1/4
      * }}}
      */
-    def -(that: Rational) = ???
+    def -(that: Rational): Rational = (-that) + n
     /** Extensión de la clase Int que permite multiplicar por un Rational
      * 
      * {{{
@@ -394,7 +441,7 @@ object Rational:
      * val res2: rational.Rational = 0
      * }}}
      */
-    def *(that: Rational) = ???
+    def *(that: Rational): Rational = that * n
     /** Extensión de la clase Int que permite dividir por un Rational
      * 
      * {{{
@@ -413,11 +460,13 @@ object Rational:
      *   , si `that` es Rational(0)
      * 
      */
-    def /(that: Rational) = ???
+    def /(that: Rational): Rational =
+      require(that.numer != 0, "El denominador no puede ser 0")
+      Rational(n * that.denom, that.numer)
 
   /** Método privado, calcula el máximo común divisor de dos enteros
     */
   private def gcd(a: Int, b: Int): Int =
-    if b == 0 then a
+    if b == 0 then a.abs
     else gcd(b, a % b)
 end Rational
