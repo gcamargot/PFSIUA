@@ -381,31 +381,11 @@ object Rational:
    * 
    */
   def apply(s: String): Rational =
-    if s.isEmpty then throw NumberFormatException("Empty string")
-    
-    val trimmed = s.trim
-    val parts = trimmed.split("/")
-    parts.length match
-      case 1 =>
-        try
-          val n = parts(0).toInt
-          apply(n)
-        catch
-          case _: NumberFormatException => throw NumberFormatException(s"Invalid number: ${parts(0)}")
-      case 2 =>
-        if parts(0).isEmpty || parts(1).isEmpty then
-          throw NumberFormatException(s"Invalid format: $s")
-        try
-          val n = parts(0).toInt
-          val d = parts(1).toInt
-          if d == 0 then
-            throw IllegalArgumentException("El denominador no puede ser 0")
-          apply(n, d)
-        catch
-          case _: NumberFormatException =>
-            throw NumberFormatException(s"Invalid number in fraction: $s")
-      case _ =>
-        throw NumberFormatException(s"Invalid format: $s")
+    s match
+      case "" => throw NumberFormatException("Empty string")
+      case "/" => throw NumberFormatException("Invalid format: " + s)
+      case s"$a/$b" => apply(a.toInt, b.toInt)
+      case _ => apply(s.toInt)
 
   /** Métodos de extensión */
   extension (n: Int)
