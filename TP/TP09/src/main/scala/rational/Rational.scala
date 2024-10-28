@@ -34,7 +34,17 @@ object RationalString:
      * 
      * @returns Some(q) si la string representa un racional `q`, None en caso contrario.
      */
-    def unapply(s: String): Option[Rational] = ???
+    def unapply(s: String): Option[Rational] =
+        try
+            s match
+                case s"$a/$b" =>
+                    val n = a.toInt
+                    val d = b.toInt
+                    if d != 0 then Some(Rational(n, d)) else None
+                case a =>
+                    Some(Rational(a.toInt))
+        catch
+            case _: NumberFormatException => None
 
 extension (r: Rational)
     /** Devuelve el valor absoluto de un racional
@@ -50,7 +60,10 @@ extension (r: Rational)
      * val res2: rational.Rational = 0
      * }}}
      */
-    def abs: Rational = ???
+    def abs: Rational =
+        val absNumer = if r.numer < 0 then -r.numer else r.numer
+        val absDenom = if r.denom < 0 then -r.denom else r.denom
+        Rational(absNumer, absDenom)
 
     /** Eleva un racional a una potencia racional, que debe ser entera
      * 
@@ -81,7 +94,17 @@ extension (r: Rational)
      * @throws IllegalArgumentException , si el exponente no es entero, o si la
      * base es cero y el exponente es negativo.
      */
-    def pow(e: Rational) = ???
+    def pow(e: Rational): Rational =
+        if e.denom != 1 then
+            throw new IllegalArgumentException("El exponente no es entero")
+        if r.numer == 0 && e.numer < 0 then
+            throw new IllegalArgumentException("El denominador no puede ser 0")
+        
+        val exp = e.numer
+        if exp < 0 then
+            Rational(math.pow(r.denom, -exp).toInt, math.pow(r.numer, -exp).toInt)
+        else
+            Rational(math.pow(r.numer, exp).toInt, math.pow(r.denom, exp).toInt)
 
   
 extension (r: Rational.type)
@@ -112,5 +135,5 @@ extension (r: Rational.type)
      * val d: Int = 2
      * }}}
      */
-    def unapply(q: Rational): Some[(Int, Int)] = ???
-
+    def unapply(q: Rational): Some[(Int, Int)] =
+        Some((q.numer, q.denom))

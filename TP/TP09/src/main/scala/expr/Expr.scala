@@ -1,6 +1,9 @@
 package expr
 
 import rational.*
+import scala.util.{Try, Either, Left, Right}
+import scala.collection.mutable.Stack
+import scala.util.control.Breaks
 
 /** Representa un operador binario */
 enum BinaryOperator:
@@ -147,7 +150,60 @@ sealed trait Expr:
    * }}}
    * 
    */
-  def show: String = ???
+  def show: String = this match {
+    case Num(r) => if (r < Rational.apply(0)) s"($r)" else r.toString
+    case BinOp(op, left, right) => op match {
+      case BinaryOperator.Plus => {
+        val leftStr = left match {
+          case BinOp(op, _, _) if op == BinaryOperator.Plus || op == BinaryOperator.Minus => s"${left.show}"
+          case _ => left.show
+        }
+        val rightStr = right match {
+          case BinOp(op, _, _) if op == BinaryOperator.Plus || op == BinaryOperator.Minus => s"(${right.show})"
+          case _ => right.show
+        }
+        s"$leftStr + $rightStr"
+      }
+      case BinaryOperator.Minus => {
+        val leftStr = left match {
+          case BinOp(op, _, _) if op == BinaryOperator.Plus || op == BinaryOperator.Minus => s"${left.show}"
+          case _ => left.show
+        }
+        val rightStr = right match {
+          case BinOp(op, _, _) if op == BinaryOperator.Plus || op == BinaryOperator.Minus => s"(${right.show})"
+          case _ => right.show
+        }
+        s"$leftStr - $rightStr"
+      }
+      case BinaryOperator.Times =>
+        val leftStr = left match {
+          case BinOp(op, _, _) if op == BinaryOperator.Plus || op == BinaryOperator.Minus => s"(${left.show})"
+          case _ => left.show
+        }
+        val rightStr = right match {
+          case BinOp(op, _, _) if op == BinaryOperator.Plus || op == BinaryOperator.Minus => s"(${right.show})"
+          case _ => right.show
+        }
+        s"$leftStr * $rightStr"
+      case BinaryOperator.Div =>
+        val leftStr = left match {
+          case BinOp(op, _, _) if op == BinaryOperator.Plus || op == BinaryOperator.Minus => s"(${left.show})"
+          case _ => left.show
+        }
+        val rightStr = right match {
+          case BinOp(op, _, _) if op == BinaryOperator.Plus || op == BinaryOperator.Minus => s"(${right.show})"
+          case BinOp(op,_,_) if op == BinaryOperator.Times || op == BinaryOperator.Div => s"(${right.show})"
+          case _ => right.show
+        }
+        s"$leftStr ÷ $rightStr"
+      case BinaryOperator.Pow => s"pow(${left.show}, ${right.show})"
+    }
+    case UnOp(op, expr) => op match {
+      case UnaryOperator.Neg => s"neg(${expr.show})"
+      case UnaryOperator.Inv => s"inv(${expr.show})"
+      case UnaryOperator.Abs => s"abs(${expr.show})"
+    }
+  }
 
   /** Evalúa una expresión y devuelve su resultado
    * 
@@ -200,7 +256,35 @@ sealed trait Expr:
    * 
    * @throws IllegalArgumentException , si la evaluación desencadena una división por cero.
    */
-  def eval: Rational = ???
+  def eval: Rational = this match {
+    case Num(n) => {
+      // si el numerador es 0 devolvemos rational 0
+      // si el denominador es 1 devolvemos solo el numerador
+      // si el denominador es distinto de 1 devolvemos el racional
+
+      if (n.numer == 0) Rational(0)
+      else if (n.denom == 1) Rational(n.numer)
+      else Rational(n.numer, n.denom)
+    }
+    case UnOp(op, e) => op match {
+      case UnaryOperator.Neg => -e.eval
+      case UnaryOperator.Abs => e.eval.abs
+      case UnaryOperator.Inv => 
+        if (e.eval != Rational(0)) Rational(1) / e.eval
+        else throw new IllegalArgumentException("El denominador no puede ser 0")
+    }
+    case BinOp(op, e1, e2) => op match {
+      case BinaryOperator.Plus => e1.eval + e2.eval
+      case BinaryOperator.Minus => e1.eval - e2.eval
+      case BinaryOperator.Times => e1.eval * e2.eval
+      case BinaryOperator.Div => 
+        if (e2.eval != Rational(0)) e1.eval / e2.eval
+        else throw new IllegalArgumentException("El denominador no puede ser 0")
+      case BinaryOperator.Pow => 
+        if (e2.eval.denom == 1) e1.eval.pow(e2.eval)
+        else throw new IllegalArgumentException("El exponente no es entero")
+    }
+  }
 
   /** Evalúa una expresión y devuelve su resultado encapsulado en `Option[Rational]`
    * 
@@ -235,7 +319,21 @@ sealed trait Expr:
    * 
    * @returns `Some(q)` si la evaluación es exitosa, donde `q` es el resultado de la evaluación; y `None` si la evaluación falla.
    */
-  def evalOption: Option[Rational] = ???
+  def evalOption: Option[Rational] = this match {
+    case Num(n) => Some(n)
+    case UnOp(op, e) => op match {
+      case UnaryOperator.Neg => Some(-e.eval)
+      case UnaryOperator.Abs => Some(e.eval.abs)
+      case UnaryOperator.Inv => e.evalOption.flatMap(r => if (r != Rational(0)) Some(Rational(1) / r) else None)
+    }
+    case BinOp(op, e1, e2) => op match {
+      case BinaryOperator.Plus => for { r1 <- e1.evalOption; r2 <- e2.evalOption } yield r1 + r2
+      case BinaryOperator.Minus => for { r1 <- e1.evalOption; r2 <- e2.evalOption } yield r1 - r2
+      case BinaryOperator.Times => for { r1 <- e1.evalOption; r2 <- e2.evalOption } yield r1 * r2
+      case BinaryOperator.Div => for { r1 <- e1.evalOption; r2 <- e2.evalOption if r2 != Rational(0) } yield r1 / r2
+      case BinaryOperator.Pow => for { r1 <- e1.evalOption; r2 <- e2.evalOption if r2.denom == 1 } yield r1.pow(r2)
+    }
+  }
   
   /** Produce una *string* que representa la expresión.
    * El resultado es equivalente al necesario para construir la expresión.
@@ -252,7 +350,26 @@ sealed trait Expr:
    * }}}
    * 
    */
-  override def toString: String = ???
+  override def toString: String = this match {
+    case Num(n) => {
+      if (n.numer == 0) "Num(Rational(0))"
+      else if (n.denom == 1) s"Num(Rational(${n.numer}))"
+      else s"Num(Rational(${n.numer},${n.denom}))"
+    }
+    case UnOp(op, e) => op match {
+      case UnaryOperator.Neg => s"UnOp(Neg,${e.toString})"
+      case UnaryOperator.Abs => s"UnOp(Abs,${e.toString})"
+      case UnaryOperator.Inv => s"UnOp(Inv,${e.toString})"
+    }
+    case BinOp(op, e1, e2) => op match {
+      case BinaryOperator.Plus => s"BinOp(Plus,${e1.toString},${e2.toString})"
+      case BinaryOperator.Minus => s"BinOp(Minus,${e1.toString},${e2.toString})"
+      case BinaryOperator.Times => s"BinOp(Times,${e1.toString},${e2.toString})"
+      case BinaryOperator.Div => s"BinOp(Div,${e1.toString},${e2.toString})"
+      case BinaryOperator.Pow => s"BinOp(Pow,${e1.toString},${e2.toString})"
+    }
+  }
+
 
 /** Representa un número racional */
 case class Num(number: Rational) extends Expr
@@ -350,8 +467,92 @@ object Expr:
    * val res4: Either[String, expr.Expr] = Left(Faltan operadores)
    * }}}
    */
-  def parseRPN(e: List[String]): Either[String, Expr] = ???
-  
+  def parseRPN(e: List[String]): Either[String, Expr] = {
+    def BinaryOperation(op: String, left: Expr, right: Expr) = op match {
+      case "+" => BinOp(BinaryOperator.Plus, left, right)
+      case "-" => BinOp(BinaryOperator.Minus, left, right)
+      case "*" => BinOp(BinaryOperator.Times, left, right)
+      case "/" => BinOp(BinaryOperator.Div, left, right)
+      case "÷" => BinOp(BinaryOperator.Div, left, right)
+      case "pow" => BinOp(BinaryOperator.Pow, left, right)
+    }
+
+    def UnaryOperation(op: String, expr: Expr) = op match {
+        case "inv" => UnOp(UnaryOperator.Inv,expr)
+        case "neg" => UnOp(UnaryOperator.Neg,expr)
+        case "abs" => UnOp(UnaryOperator.Abs,expr)
+    }
+
+    object rational {
+      def apply(s: String): Rational = {
+        val rationalPattern = """^(-?\d+)/(\d+)$""".r
+        val integerPattern = """^(-?\d+)$""".r
+        s match {
+          case rationalPattern(numerator, denominator) =>
+            if (denominator.toInt != 0) {
+              Rational(numerator.toInt, denominator.toInt)
+            } else {
+              throw new IllegalArgumentException("El denominador no puede ser 0")
+            }
+          case integerPattern(intValue) =>
+            Rational(intValue.toInt, 1)
+          case _ =>
+            print(s"${s}")
+            throw new IllegalArgumentException(s"Elemento desconocido: $s")
+        }
+      }
+    }
+
+    val stack = scala.collection.mutable.Stack[Expr]()
+    var flag = 0
+
+    if(e.length == 0 || e.forall(_.isEmpty)) {
+      Left("Nada que evaluar")
+    } else {
+      for(value <- e) {
+        if(flag == 0) {
+          val token = value.replace(" ", "")
+          if(token.nonEmpty) {
+            if (token == "inv" || token == "neg" || token == "abs") {
+              if (stack.size < 1) {
+                flag = 1
+              } else {
+                val expr = stack.pop()
+                val result = UnaryOperation(token, expr)
+                stack.push(result)
+              }
+            } else if (token == "+" || token == "-" || token == "*" || token == "/"  || token == "÷"|| token == "pow") {        
+              if (stack.size < 2) {
+                flag = 2
+              } else {
+                val right = stack.pop()
+                val left = stack.pop()
+                val result = BinaryOperation(token, left, right)
+                stack.push(result)
+              }
+            } else if (token.forall(c => c.isDigit) || (token.length > 2 && token.contains("/")) || (token.length > 1 && token.contains("-"))) {
+              stack.push(Num(rational(token)))
+            } else {
+              flag = 3
+            }
+          }
+        }
+      }
+
+      if(flag == 1) {
+        Left("Falta argumento")
+      } else if (flag == 2) {
+        Left("Argumentos insuficientes")
+      } else if(flag == 3) {
+        Left("Elemento desconocido")
+      } else if (stack.size != 1) {
+        Left("Faltan operadores")
+      } else {
+        Right(stack.pop())
+      }
+    }
+  }
+
     /** Recibe una *string*, y la interpreta como una expresión RPN formada por
      * operadores y operandos separados por espacios en blanco.
      * Su funcionamiento en consistente con el de la versión [[Expr.parseRPN(List[String])]] que recibe como argumento una lista de *strings*.
@@ -387,5 +588,12 @@ object Expr:
    * val res14: Either[String, expr.Expr] = Left(Faltan operadores)
    * }}}
      */
-  def parseRPN(e: String): Either[String, Expr] = ???
-    
+  def parseRPN(e: String): Either[String, Expr] = {
+    val trimmed = e.trim
+    if (trimmed.isEmpty) {
+      Left("Nada que evaluar")
+    } else {
+      val list = trimmed.split("\\s+").filterNot(_.isEmpty).toList
+      parseRPN(list)
+    }
+  }
