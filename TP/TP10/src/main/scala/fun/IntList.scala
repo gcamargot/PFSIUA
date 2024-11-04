@@ -68,9 +68,13 @@ object IntList:
   }
 
   /** Devuelve la longitud de una lista */
-  def length(list: IntList): Int = list match {
-    case Empty => 0
-    case Cons(_, tail) => 1 + length(tail)
+  def length(list: IntList): Int = {
+    @annotation.tailrec
+    def lengthAcc(lst: IntList, acc: Int): Int = lst match {
+      case Empty => acc
+      case Cons(_, tail) => lengthAcc(tail, acc + 1)
+    }
+    lengthAcc(list, 0)
   }
 
   /** Aplica un operador binario a los elementos de una lista y a un valor
@@ -189,12 +193,12 @@ object IntList:
     * @throws scala.IllegalArgumentException
     *   si `step` es 0.
     */
-  def range(start: Int, end: Int, step: Int = 1): IntList = {
-    if (step == 0) throw new IllegalArgumentException
-    if (start == end) return empty
-    if (step > 0 && start > end) return empty
-    if (step < 0 && start < end) return empty
-    Cons(start, range(start + step, end, step))
+  def range(start: Int, end: Int, step: Int = 1): IntList = (step, start, end) match {
+    case (0, _, _) => throw new IllegalArgumentException
+    case (_, x, y) if x == y => empty
+    case (s, x, y) if s > 0 && x > y => empty
+    case (s, x, y) if s < 0 && x < y => empty
+    case _ => Cons(start, range(start + step, end, step))
   }
 
   /** Equivalente a range(0,end,1) */
