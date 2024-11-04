@@ -59,11 +59,11 @@ object IntList:
     *   Una IntList
     * @return
     *   los elementos de `list` excepto el primero
-    * @throws scala.UnsupportedOperationException
+    * @throws scala.NoSuchElementException
     *   si la lista está vacía
     */
   def tail(list: IntList): IntList = list match {
-    case Empty => throw new UnsupportedOperationException
+    case Empty => throw new NoSuchElementException
     case Cons(_, tail) => tail
   }
 
@@ -139,12 +139,12 @@ object IntList:
     * @return
     *   el resultado de aplicar el operador de izquierda a derecha, usando el
     *   primer elemento como valor inicial.
-    * @throws scala.NoSuchElementException
+    * @throws scala.NoSuchElementException --> Pide No Such Element Exception pero en los tests se pide UnsupportedOperationException
     *   si la lista está vacía.
     */
   def foldl1(f: (Int, Int) => Int)(list: IntList): Int = {
     list match {
-      case Empty => throw new UnsupportedOperationException("Operación no soportada en lista vacía")
+      case Empty => throw new UnsupportedOperationException("Lista vacía")
       case Cons(head, tail) => foldl(head)(f)(tail)
     }
   }
@@ -160,12 +160,12 @@ object IntList:
     * @return
     *   el resultado de aplicar el operador de derecha a izquierda, usando el
     *   último elemento como valor inicial.
-    * @throws scala.NoSuchElementException
+    * @throws scala.NoSuchElementException --> Pide No Such Element Exception pero en los tests se pide UnsupportedOperationException
     *   si la lista está vacía.
     */
   def foldr1(f: (Int, Int) => Int)(list: IntList): Int = {
     list match {
-      case Empty => throw new UnsupportedOperationException("Operación no soportada en lista vacía")
+      case Empty => throw new UnsupportedOperationException("Lista vacía")
       case Cons(head, Empty) => head
       case Cons(head, tail) => f(head, foldr1(f)(tail))
     }
