@@ -1,8 +1,5 @@
 package obj
 
-/** @author
-  *   miguel
-  */
 trait List[+A]:
   def head: A
   def tail: List[A]
