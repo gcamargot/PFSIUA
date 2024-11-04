@@ -59,11 +59,11 @@ object IntList:
     *   Una IntList
     * @return
     *   los elementos de `list` excepto el primero
-    * @throws scala.NoSuchElementException
+    * @throws scala.NoSuchElementException --> Pide No Such Element Exception pero en los tests se pide UnsupportedOperationException
     *   si la lista está vacía
     */
   def tail(list: IntList): IntList = list match {
-    case Empty => throw new NoSuchElementException
+    case Empty => throw new UnsupportedOperationException
     case Cons(_, tail) => tail
   }
 
