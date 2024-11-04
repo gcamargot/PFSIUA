@@ -26,13 +26,18 @@ object IntList:
     * @return
     *   Una instancia de IntList
     */
-  def apply(args: Int*): IntList = ???
+  def apply(args: Int*): IntList = {
+    args.foldRight(empty)((x, xs) => Cons(x, xs))
+  }
 
   /** Devuelve una IntList vacía */
-  def empty: IntList = ???
+  def empty: IntList = Empty
 
   /** Determina si una lista está vacía */
-  def isEmpty(list: IntList): Boolean = ???
+  def isEmpty(list: IntList): Boolean = list match {
+    case Empty => true
+    case _ => false
+  }
 
   /** Devuelve el primer elemento de una lista
     *
@@ -43,7 +48,10 @@ object IntList:
     * @throws scala.NoSuchElementException
     *   si la lista está vacía
     */
-  def head(list: IntList): Int = ???
+  def head(list: IntList): Int = list match {
+    case Empty => throw new NoSuchElementException
+    case Cons(head, _) => head
+  }
 
   /** Devuelve los elementos de una lista excepto el primero
     *
@@ -54,10 +62,16 @@ object IntList:
     * @throws scala.UnsupportedOperationException
     *   si la lista está vacía
     */
-  def tail(list: IntList): IntList = ???
+  def tail(list: IntList): IntList = list match {
+    case Empty => throw new UnsupportedOperationException
+    case Cons(_, tail) => tail
+  }
 
   /** Devuelve la longitud de una lista */
-  def length(list: IntList): Int = ???
+  def length(list: IntList): Int = list match {
+    case Empty => 0
+    case Cons(_, tail) => 1 + length(tail)
+  }
 
   /** Aplica un operador binario a los elementos de una lista y a un valor
     * inicial, yendo de izquierda a derecha.
@@ -78,7 +92,12 @@ object IntList:
     * }}}
     * donde `x,,1,,, ..., x,,n,,` son los elementos de la lista
     */
-  def foldl[T](z: T)(f: (T, Int) => T)(list: IntList): T = ???
+  def foldl[T](z: T)(f: (T, Int) => T)(list: IntList): T = {
+    list match {
+      case Empty => z
+      case Cons(head, tail) => foldl(f(z, head))(f)(tail)
+    }
+  }
 
   /** Aplica un operador binario a los elementos de una lista y a un valor
     * inicial, yendo de derecha a izquierda.
@@ -99,7 +118,12 @@ object IntList:
     * }}}
     * donde `x,,1,,, ..., x,,n,,` son los elementos de la lista.
     */
-  def foldr[T](z: T)(f: (Int, T) => T)(list: IntList): T = ???
+  def foldr[T](z: T)(f: (Int, T) => T)(list: IntList): T = {
+    list match {
+      case Empty => z
+      case Cons(head, tail) => f(head, foldr(z)(f)(tail))
+    }
+  }
 
   /** Variante de foldl que no tiene valor inicial, y por lo tanto no puede ser
     * aplicado a listas vacías.
@@ -114,7 +138,13 @@ object IntList:
     * @throws scala.NoSuchElementException
     *   si la lista está vacía.
     */
-  def foldl1(f: (Int, Int) => Int)(list: IntList): Int = ???
+  def foldl1(f: (Int, Int) => Int)(list: IntList): Int = {
+    list match {
+      case Empty => throw new UnsupportedOperationException("Operación no soportada en lista vacía")
+      case Cons(head, tail) => foldl(head)(f)(tail)
+    }
+  }
+
 
   /** Variante de foldr que no tiene valor inicial, y por lo tanto no puede ser
     * aplicado a listas vacías.
@@ -129,8 +159,13 @@ object IntList:
     * @throws scala.NoSuchElementException
     *   si la lista está vacía.
     */
-  def foldr1(f: (Int, Int) => Int)(list: IntList): Int = ???
-
+  def foldr1(f: (Int, Int) => Int)(list: IntList): Int = {
+    list match {
+      case Empty => throw new UnsupportedOperationException("Operación no soportada en lista vacía")
+      case Cons(head, Empty) => head
+      case Cons(head, tail) => f(head, foldr1(f)(tail))
+    }
+  }
   /** Devuelve una IntList con una progresión aritmética, con los números desde
     * `start` hasta `end` exclusive, con avances `step`.
     *
@@ -154,29 +189,45 @@ object IntList:
     * @throws scala.IllegalArgumentException
     *   si `step` es 0.
     */
-  def range(start: Int, end: Int, step: Int = 1): IntList = ???
+  def range(start: Int, end: Int, step: Int = 1): IntList = {
+    if (step == 0) throw new IllegalArgumentException
+    if (start == end) return empty
+    if (step > 0 && start > end) return empty
+    if (step < 0 && start < end) return empty
+    Cons(start, range(start + step, end, step))
+  }
 
   /** Equivalente a range(0,end,1) */
-  def range(end: Int): IntList = ???
+  def range(end: Int): IntList = range(0, end)
+
 
   /** Devuelve la suma de los elementos de la lista */
-  def sum(list: IntList): Int = ???
+  def sum(list: IntList): Int = foldl(0)(_ + _)(list)
+  
 
   /** Devuelve el producto de los elementos de la lista */
-  def product(list: IntList): Int = ???
+  def product(list: IntList): Int = {
+    foldl(1)(_ * _)(list)
+  }
 
   /** Devuelve una String con los elementos de la lista separados por `sep`
     *
     *   - mkString(":")(IntList(1,2,3)) == "1:2:3"
     *   - mkString(":")(IntList()) == ""
     */
-  def mkString(sep: String)(list: IntList): String = ???
+  def mkString(sep: String)(list: IntList): String = {
+    list match {
+      case Empty => ""
+      case Cons(head, tail) => head.toString + (if (tail == Empty) "" else sep) + mkString(sep)(tail)
+    }
+  }
 
   /** Versión de `mkString` equivalente a `start`+`mkString`(sep)(list)+`end`
     *
     *   - mkString("[", "," , "]")(List()) = "[]"
     *   - mkString("[", "," , "]")(List(1,2,3)) = "[1,2,3]"
     */
-  def mkString(start: String, sep: String, end: String)(list: IntList): String =
-    ???
+  def mkString(start: String, sep: String, end: String)(list: IntList): String = {
+    start + mkString(sep)(list) + end
+  }
 end IntList
