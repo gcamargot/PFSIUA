@@ -27,7 +27,7 @@ case class Pos(x: Int, y: Int):
   /** El método `move` devuelve un nuevo punto desplazado `dx` posiciones en el
     * eje vertical, y `dy` posiciones en el eje horizontal.
     */
-  def move(dx: Int, dy: Int): Pos = ???
+  def move(dx: Int, dy: Int): Pos = Pos(x + dx, y + dy)
 end Pos
 
 /** Move representa posibles movidas de un caballo de ajedrez. Por ejemplo,
@@ -67,18 +67,20 @@ trait BaseGame:
     * contrario. Una movida es legal si la posición de destino está dentro del
     * tablero y no está ocupada por otra pieza.
     */
-  def isLegal(pos: Pos): Boolean = ???
+  def isLegal(pos: Pos): Boolean = board(pos) && !pieces(pos)
 
   /** El método neighbors devuelve la lista de todas las posiciones a las que se
     * puede llegar con un salto de caballo desde la posición actual, sean estas
     * legales o no.
     */
-  def neighbors(pos: Pos): List[Pos] = ???
+  def neighbors(pos: Pos): List[Pos] = 
+    Move.values.toList.map(move => move(pos))
 
   /** El método legalNeighbors devuelve la lista de posiciones legales a las que
     * se puede mover el caballo desde la posición `pos`.
     */
-  def legalNeighbors(pos: Pos): List[Pos] = ???
+  def legalNeighbors(pos: Pos): List[Pos] = 
+    neighbors(pos).filter(isLegal)
 end BaseGame
 
 /** Definiciones de distintos tipos de tableros. No es necesario modificar nada.

@@ -42,15 +42,27 @@ class Pouring(args: Int*):
   def from(paths: Set[Path], explored: Set[State]): LazyList[Set[Path]] =
     if paths.isEmpty then LazyList.empty
     else
-      val more =
-        for
-          path <- paths
-          newPath <- moves.map(path.extend)
-          if !explored(newPath.endState)
-        yield newPath
-      paths #:: from(more, explored ++ more.map(_.endState))
+      // Generamos todos los nuevos caminos posibles
+      val allNewPaths = for {
+        path <- paths
+        move <- moves
+        newPath = path.extend(move)
+        if !explored(newPath.endState)
+      } yield newPath
+
+      // Agrupamos los caminos por estado final y seleccionamos uno por estado
+      val uniquePaths = allNewPaths
+        .groupBy(_.endState)
+        .values
+        .map(_.minBy(p => p.path.length))
+        .toSet
+
+      val newExplored = explored ++ uniquePaths.map(_.endState)
+      
+      paths #:: from(uniquePaths, newExplored)
 
   val pathsFromStart = from(Set(Path(Nil, initialState)), Set(initialState))
+
   def solutions(target: Int): LazyList[Path] =
     for
       paths <- pathsFromStart
@@ -59,3 +71,4 @@ class Pouring(args: Int*):
     yield path
   
   def solution(target: Int) = solutions(target).headOption
+end Pouring
