@@ -241,7 +241,13 @@ class Rational private (n: Int, d: Int) extends Ordered[Rational]:
    * 
    */
   def pow(n: Int): Rational =
+<<<<<<< Updated upstream
     if n == 0 then
+=======
+    if numer == 0 && n < 0 then
+      require(false, "El denominador no puede ser 0")
+    else if n == 0 then
+>>>>>>> Stashed changes
       Rational(1)
     else if n > 0 then
       new Rational(math.pow(numer, n).toInt, math.pow(denom, n).toInt)
@@ -381,11 +387,28 @@ object Rational:
    * 
    */
   def apply(s: String): Rational =
+<<<<<<< Updated upstream
     s match
       case "" => throw NumberFormatException("Empty string")
       case "/" => throw NumberFormatException("Invalid format: " + s)
       case s"$a/$b" => apply(a.toInt, b.toInt)
       case _ => apply(s.toInt)
+=======
+    try
+      val parts = s.split("/")
+      parts.length match
+        case 1 =>
+          val n = parts(0).toInt
+          apply(n)
+        case 2 =>
+          val n = parts(0).toInt
+          val d = parts(1).toInt
+          apply(n, d)
+        case _ =>
+          throw NumberFormatException(s"Formato inválido: $s")
+    catch
+      case e: NumberFormatException => throw e
+>>>>>>> Stashed changes
 
   /** Métodos de extensión */
   extension (n: Int)
